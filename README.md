@@ -11,4 +11,4 @@ chmod +x docker-cmd
 
 | Docker Image                        | CPU       | FPU-Enabled | Size  |
 |-------------------------------------|-----------|-------------|-------|
-| chent11/cross-compiler:cortex-m4-hf | cortex-m4 | Yes         | 671MB |
+| chent11/cross-compiler:cortex-m4-hf | cortex-m4 | Yes         | 596MB |
