@@ -64,12 +64,13 @@ FROM debian:bullseye-slim as main
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y \
+    bear \
     dumb-init \
     libncursesw5-dev \
     libssl-dev \
     make \
-    python3 \
-    ninja-build
+    ninja-build \
+    python3
 RUN apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 COPY --from=build /toolchain /toolchain
