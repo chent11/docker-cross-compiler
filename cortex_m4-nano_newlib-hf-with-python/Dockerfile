@@ -1,7 +1,7 @@
 FROM debian:bullseye as build
 LABEL maintainer="Chen Tao t.clydechen@gmail.com"
 
-ENV CT_VERSION crosstool-ng-1.25.0-rc1
+ENV CT_VERSION crosstool-ng-1.25.0
 ENV CCACHE_VERSION v4.6
 ENV CMAKE_VERSION 3.22.3
 
@@ -17,15 +17,16 @@ RUN apt-get install -y \
     flex \
     g++ \
     gawk \
-    gpg \
     gcc \
     git \
+    gpg \
     help2man \
     libncurses-dev \
-    libtool-bin \
     libssl-dev \
+    libtool-bin \
     make \
     pkg-config \
+    python3-dev \
     texinfo \
     unzip \
     wget \
@@ -54,7 +55,7 @@ RUN /bin/bash cmake-${CMAKE_VERSION}-linux-x86_64.sh --skip-license --exclude-su
 
 # Build crosstool-ng
 WORKDIR /crosstool-ng
-RUN ./bootstrap && ./configure --enable-local && make -j`nproc`
+RUN ./bootstrap && ./configure --enable-local && make
 # Build GCC
 COPY crosstool-ng.config /crosstool-ng/.config
 RUN ./ct-ng build
@@ -63,14 +64,14 @@ FROM debian:bullseye-slim as main
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get install --no-install-recommends -y \
     bear \
     dumb-init \
     libncursesw5-dev \
     libssl-dev \
     make \
     ninja-build \
-    python3
+    python3-dev
 RUN apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 COPY --from=build /toolchain /toolchain
