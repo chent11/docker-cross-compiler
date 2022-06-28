@@ -9,6 +9,6 @@ chmod +x docker-cmd
 ./docker-cmd make
 ```
 
-| Docker Image | CPU | FPU-Enabled | Uncompressed Image Size | Compressed Size |
-|-|-|-|-|-|
-| chent11/cross-compiler:cortex_m4-nano_newlib-hf | cortex-m4 | Yes | 11M | ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf) |
+| Docker Image | CPU | FPU-Enabled | Uncompressed Image Size |
+|:-|:-:|:-:|:-:|
+| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf)<br/>chent11/cross-compiler:cortex_m4-nano_newlib-hf | cortex-m4 | Yes | 11M |
