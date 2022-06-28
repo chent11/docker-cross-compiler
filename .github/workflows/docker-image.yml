@@ -23,7 +23,6 @@ jobs:
 
     - name: Install and config git
       run: |
-          sudo apt-get install -y git
           git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -31,8 +30,8 @@ jobs:
 
     - name: Build the Docker image
       run: |
-          # docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
-          # UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
+          docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
+          UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
           UNCOMPRESSED_SIZE=115M
           echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
           sed -i -E "s/(chent11\/cross-compiler:${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
@@ -47,4 +46,4 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: |
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
-          # docker image push chent11/cross-compiler:${{ matrix.image.name }}
+          docker image push chent11/cross-compiler:${{ matrix.image.name }}

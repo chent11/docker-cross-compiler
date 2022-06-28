@@ -57,7 +57,8 @@ RUN /bin/bash cmake-${CMAKE_VERSION}-linux-x86_64.sh --skip-license --exclude-su
 WORKDIR /crosstool-ng
 RUN ./bootstrap && ./configure --enable-local && make
 # Build GCC
-COPY crosstool-ng.config /crosstool-ng/.config
+COPY crosstool-ng.config /crosstool-ng/defconfig
+RUN ./ct-ng defconfig
 RUN ./ct-ng build
 
 FROM debian:bullseye-slim as main
