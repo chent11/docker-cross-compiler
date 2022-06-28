@@ -57,6 +57,7 @@ RUN /bin/bash cmake-${CMAKE_VERSION}-linux-x86_64.sh --skip-license --exclude-su
 WORKDIR /crosstool-ng
 RUN ./bootstrap && ./configure --enable-local && make
 # Build GCC
+# the crosstool-ng.config file is copied from other config files in github action script
 COPY crosstool-ng.config /crosstool-ng/defconfig
 RUN ./ct-ng defconfig
 RUN ./ct-ng build

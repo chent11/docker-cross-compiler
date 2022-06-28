@@ -17,6 +17,7 @@ jobs:
       matrix:
         image:
         - {name: "cortex_m4-nano_newlib-hf"}
+        - {name: "cortex_m0-nano_newlib"}
 
     steps:
     - uses: actions/checkout@v3
@@ -26,16 +27,22 @@ jobs:
           git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git pull github ${{ github.ref }} --ff-only
 
     - name: Build the Docker image
-      run: docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
+      run: |
+          mkdir ${{ matrix.image.name }}
+          cd ${{ matrix.image.name }}
+          cp ../Dockerfile .
+          cp ../${{ matrix.image.name }}.config crosstool-ng.config
+          docker build . --tag chent11/cross-compiler:${{ matrix.image.name }}
 
     - name: Update README.md
       run: |
           UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
           echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
-          sed -i -E "s/(${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
+          sed -i -E "s/(${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
+
+          git pull github ${{ github.ref }} --ff-only
           git add README.md
           git commit -m "Update README.md"
           git push github ${{ github.ref }}

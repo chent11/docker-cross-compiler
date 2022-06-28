@@ -13,6 +13,7 @@ chmod +x docker-cmd
 ./docker-cmd make
 ```
 
-| Image Tags | CPU | FPU-Enabled | Uncompressed Image Size |
-|:-|:-:|:-:|:-:|
-| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf)<br/>cortex_m4-nano_newlib-hf | cortex-m4 | Yes | 11M |
+| Image Tags | CPU | FPU | MMU | Uncompressed Image Size |
+|:-|:-:|:-:|:-:|:-:|
+| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m0-nano_newlib)<br/>cortex_m0-nano_newlib | cortex-m0 | ❌ | ❌ | 0M |
+| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf)<br/>cortex_m4-nano_newlib-hf | cortex-m4 | ✅ | ✅ | 0M |
