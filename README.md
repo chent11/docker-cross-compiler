@@ -2,13 +2,17 @@
 minimal bare metal cross compiler in docker environment
 
 # How to use
-```
-docker pull chent11/cross-compiler:cortex_m4-nano_newlib-hf
-echo 'docker run --rm chent11/cross-compiler:cortex_m4-nano_newlib-hf "@"' > docker-cmd
+Choose a tag below and pull from repo `chent11/cross-compiler`
+
+Example:
+```sh
+DOCKER_TAG=cortex_m4-nano_newlib-hf
+docker pull chent11/cross-compiler:$DOCKER_TAG
+echo 'docker run --rm chent11/cross-compiler:$DOCKER_TAG "@"' > docker-cmd
 chmod +x docker-cmd
 ./docker-cmd make
 ```
 
-| Docker Image | CPU | FPU-Enabled | Uncompressed Image Size |
+| Image Tags | CPU | FPU-Enabled | Uncompressed Image Size |
 |:-|:-:|:-:|:-:|
-| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf)<br/>chent11/cross-compiler:cortex_m4-nano_newlib-hf | cortex-m4 | Yes | 11M |
+| ![size](https://shields.io/docker/image-size/chent11/cross-compiler/cortex_m4-nano_newlib-hf)<br/>cortex_m4-nano_newlib-hf | cortex-m4 | Yes | 11M |
