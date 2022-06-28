@@ -11,19 +11,25 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     strategy:
       fail-fast: false
       matrix:
-        image: 
+        image:
         - {name: "cortex_m4-nano_newlib-hf"}
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Build the Docker image
-      run: docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
+      run: |
+          docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
+          UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
+          echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
+          sed -i -E "s/(chent11\/cross-compiler:${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md || true
+
     - name: Publish to Docker Hub
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       run: |
           docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
           docker image push dockcross/chent11/cross-compiler:${{ matrix.image.name }}
