@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install and config git
+    - name: Config github commit robot
       run: |
           git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -29,15 +29,13 @@ jobs:
           git pull github ${{ github.ref }} --ff-only
 
     - name: Build the Docker image
-      run: |
-          docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
-          UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
-          UNCOMPRESSED_SIZE=115M
-          echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
-          sed -i -E "s/(chent11\/cross-compiler:${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
+      run: docker build ./${{ matrix.image.name }} --tag chent11/cross-compiler:${{ matrix.image.name }}
 
-    - name: Commit README.md
+    - name: Update README.md
       run: |
+          UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
+          echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
+          sed -i -E "s/(${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
           git add README.md
           git commit -m "Update README.md"
           git push github ${{ github.ref }}
