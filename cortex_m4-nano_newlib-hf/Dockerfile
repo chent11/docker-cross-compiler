@@ -26,6 +26,7 @@ RUN apt-get install -y \
     libtool-bin \
     make \
     pkg-config \
+    python3-dev \
     texinfo \
     unzip \
     wget \
@@ -69,7 +70,8 @@ RUN apt-get install --no-install-recommends -y \
     libncursesw5-dev \
     libssl-dev \
     make \
-    ninja-build
+    ninja-build \
+    python3-dev
 RUN apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 COPY --from=build /toolchain /toolchain
