@@ -9,46 +9,96 @@ on:
 jobs:
 
   build:
-
+    name: build
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         image:
-        - {name: "cortex_m4-nano_newlib-hf"}
-        - {name: "cortex_m0-nano_newlib"}
+          - {name: "cortex_m4-nano_newlib-hf"}
+          - {name: "cortex_m0-nano_newlib"}
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
 
-    - name: Config github commit robot
-      run: |
-          git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+      - name: Check if this image needs to be built
+        run: |
+            changedFiles=$(git diff --name-only HEAD^)
+            if [[ "$changedFiles" == *"${{ matrix.image.name }}"* ]]; then
+              echo "NEED=true" >> "$GITHUB_ENV"
+            else
+              echo "NEED=false" >> "$GITHUB_ENV"
+            fi
 
-    - name: Build the Docker image
-      run: |
-          mkdir ${{ matrix.image.name }}
-          cd ${{ matrix.image.name }}
-          cp ../Dockerfile .
-          cp ../${{ matrix.image.name }}.config crosstool-ng.config
-          docker build . --tag chent11/cross-compiler:${{ matrix.image.name }}
+      - name: Build the Docker image
+        if: env.NEED == 'true'
+        run: |
+            mkdir ${{ matrix.image.name }}
+            cd ${{ matrix.image.name }}
+            cp ../Dockerfile .
+            cp ../${{ matrix.image.name }}.config crosstool-ng.config
+            docker build . --tag chent11/cross-compiler:${{ matrix.image.name }}
 
-    - name: Update README.md
-      run: |
-          UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
-          echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
-          sed -i -E "s/(${{ matrix.image.name }}\s\|\s\S+\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$UNCOMPRESSED_SIZE/g" README.md
+      - name: save size info to share folder
+        if: env.NEED == 'true'
+        run: |
+            UNCOMPRESSED_SIZE=$(docker inspect -f "{{ .Size }}" chent11/cross-compiler:${{ matrix.image.name }} | numfmt --to=si)
+            echo "uncompressed size of ${{ matrix.image.name }}: $UNCOMPRESSED_SIZE"
+            mkdir share
+            echo $UNCOMPRESSED_SIZE > share/${{ matrix.image.name }}.size
 
-          git pull github ${{ github.ref }} --ff-only
-          git add README.md
-          git commit -m "Update README.md"
-          git push github ${{ github.ref }}
+      - name: upload size info to share folder
+        if: env.NEED == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: share
+          path: ./share
+          retention-days: 1
 
-    - name: Publish to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      run: |
-          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
-          docker image push chent11/cross-compiler:${{ matrix.image.name }}
+      - name: Publish to Docker Hub
+        if: github.ref == 'refs/heads/main' && env.NEED == 'true'
+        run: |
+            docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+            docker image push chent11/cross-compiler:${{ matrix.image.name }}
+
+  robot_commit:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: share
+          path: ./share
+
+      - name: Config github commit robot
+        run: |
+            git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+
+      - name: Update the size of every image in README.md
+        run: |
+            cd share
+            for f in *.size; do
+              imageName=${f%".size"}
+              echo "updating $f"
+              uncompressedSize=$(cat $f)
+              sed -i -E "s/($imageName\s\|\s\S+\s\|\s\S+\s\|\s\S+\s\|\s)\S*/\1$uncompressedSize/g" ../README.md
+            done
+            cd ..
+
+            if [ -n "$(git status README.md --porcelain)" ]; then
+              git pull github ${{ github.ref }} --ff-only
+              git add README.md
+              git commit -m "Update README.md"
+              git push github ${{ github.ref }}
+            fi
+
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: share
