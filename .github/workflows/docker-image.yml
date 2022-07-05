@@ -16,8 +16,10 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - {name: "cortex_m4-nano_newlib-hf"}
           - {name: "cortex_m0-nano_newlib"}
+          - {name: "cortex_m3-nano_newlib"}
+          - {name: "cortex_m4-nano_newlib-hf"}
+          - {name: "arm32-nano_newlib-multilibs"}
 
     steps:
       - uses: actions/checkout@v3
